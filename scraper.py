@@ -67,7 +67,6 @@ class Scraper:
         tmp = re.search(r"/[0-9]/", url).group(0)
         return int(tmp[1:2])
     
-    @staticmethod
     def _contains_filtered_word(input_text):
         filtered_words = self._appdata["filterWords"]
         for word in filtered_words:
