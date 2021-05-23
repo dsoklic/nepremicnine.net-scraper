@@ -13,6 +13,7 @@ import smtplib
 import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from systemtools.number import parseNumber
 
 
 class Scraper:
@@ -97,6 +98,7 @@ class Scraper:
                 size = offer.xpath('div/div/div[@class="main-data"]/span[@class="velikost"]/text()')[0]
                 price = offer.xpath('div/div/div[@class="main-data"]/span[@class="cena"]/text()')[0]
                 agency = offer.xpath('div/div/div[@class="main-data"]/span[@class="agencija"]/text()')[0]
+                price_per_m2 = round(parseNumber(price)/parseNumber(size))
                 
                 # Imamo vse podatke pa jih se vpisimo
                 o = {
@@ -108,6 +110,7 @@ class Scraper:
                     "size": size,
                     "price": price,
                     "agency": agency,
+                    "price_per_m2": price_per_m2,
                 }
                 new_offers.append(o)
                 self._appdata["visited"].append(o)
@@ -129,7 +132,8 @@ class Scraper:
     def _get_item_text_message(n):
         # Presledek po linku poskrbi, da mail klient pomotoma ne vkljuci zacetek opisa v URL
         message_text = f'{n["title"]}\n{n["link"]} \n{n["desc"]}\nTip: {n["type"]}\n'
-        message_text += f'Velikost:{n["size"]}\nCena: {n["price"]}\nAgencija: {n["agency"]}\n\n'
+        message_text += f'Velikost:{n["size"]}\nCena: {n["price"]}\n'
+        message_text += f'Cena/m²: {n["price_per_m2"]} €/m²\nAgencija: {n["agency"]}\n\n'
         return message_text
     
     def send_mail(self, new, removed):
