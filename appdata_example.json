@@ -13,6 +13,9 @@
     "recipient@protonmail.com",
     "mojster@gmail.com"
   ],
+  "filterWords": [
+    "Fužine"
+  ],
   "visited": [
   ]
 }

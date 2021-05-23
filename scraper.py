@@ -67,6 +67,15 @@ class Scraper:
         tmp = re.search(r"/[0-9]/", url).group(0)
         return int(tmp[1:2])
     
+    @staticmethod
+    def _contains_filtered_word(input_text):
+        filtered_words = self._appdata["filterWords"]
+        for word in filtered_words:
+            tmp = re.compile(r'\b({0})\b'.format(word), flags=re.IGNORECASE)
+            if tmp.search(input_text):
+                return True
+        return False
+
     def _check_for_new(self, url):
         """
         Checks for new offers on url in appdata.
@@ -99,6 +108,10 @@ class Scraper:
                 price = offer.xpath('div/div/div[@class="main-data"]/span[@class="cena"]/text()')[0]
                 agency = offer.xpath('div/div/div[@class="main-data"]/span[@class="agencija"]/text()')[0]
                 price_per_m2 = round(parseNumber(price)/parseNumber(size))
+                
+                if self._contains_filtered_word(desc) or self._contains_filtered_word(title):
+                    # Ponudba vsebuje filtrirano besedo
+                    continue
                 
                 # Imamo vse podatke pa jih se vpisimo
                 o = {
