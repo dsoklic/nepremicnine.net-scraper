@@ -159,18 +159,21 @@ class Scraper:
         password = smtp["password"]
         smtp_server = smtp["server"]
         
+        num_new = len(new)
+        num_removed = len(removed)
+
         message = MIMEMultipart("alternative")
-        message["Subject"] = "Spremembe na nepremicnine.net"
+        message["Subject"] = f"Spremembe na nepremicnine.net (+{num_new},-{num_removed})"
         message["From"] = user
         message["To"] = ', '.join(self._appdata["mailRecipients"])
         
         message_text = "Pozdravljen/a,\n\nPrinasam novice iz nepremicnine.net.\n\n\n"
-        if len(new) > 0:
+        if num_new > 0:
             message_text += "Novi oglasi na nepremicnine.net:\n\n"
             for n in new:
                 message_text += self._get_item_text_message(n)
             message_text += "-------------------------------------------------------------------------\n\n"
-        if len(removed) > 0:
+        if num_removed > 0:
             message_text += "Odstranjeni oglasi na nepremicnine.net\n\n"
             for r in removed:
                 message_text += self._get_item_text_message(r)
