@@ -14,6 +14,7 @@ import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from systemtools.number import parseNumber
+from dateutil import parser
 
 
 class Scraper:
@@ -123,6 +124,7 @@ class Scraper:
                     "price": price,
                     "agency": agency,
                     "price_per_m2": price_per_m2,
+                    "first_seen": str(datetime.now()),
                 }
                 new_offers.append(o)
                 self._appdata["visited"].append(o)
@@ -139,13 +141,29 @@ class Scraper:
         # End of while
         return new_offers
     # End of _check_for_new
-    
+
     @staticmethod
-    def _get_item_text_message(n):
+    def _get_item_text_message(n, show_time_online=False):
         # Presledek po linku poskrbi, da mail klient pomotoma ne vkljuci zacetek opisa v URL
         message_text = f'{n["title"]}\n{n["link"]} \n{n["desc"]}\nTip: {n["type"]}\n'
         message_text += f'Velikost:{n["size"]}\nCena: {n["price"]}\n'
-        message_text += f'Cena/m²: {n["price_per_m2"]} €/m²\nAgencija: {n["agency"]}\n\n'
+        message_text += f'Cena/m²: {n["price_per_m2"]} €/m²\nAgencija: {n["agency"]}\n'
+        
+        if show_time_online and "first_seen" in n:
+            first_seen = parser.parse(n["first_seen"])
+            elapsed = datetime.now() - first_seen
+
+            if elapsed.days == 1:
+                days_word = 'dan'
+            elif elapsed.days == 2:
+                days_word = 'dneva'
+            else:
+                days_word = 'dni'
+
+            message_text += f'Na trgu {elapsed.days} {days_word}.\n\n'
+        else:
+            message_text += '\n'
+
         return message_text
     
     def send_mail(self, new, removed):
@@ -176,7 +194,7 @@ class Scraper:
         if num_removed > 0:
             message_text += "Odstranjeni oglasi na nepremicnine.net\n\n"
             for r in removed:
-                message_text += self._get_item_text_message(r)
+                message_text += self._get_item_text_message(r, show_time_online=True)
             message_text += "-------------------------------------------------------------------------\n\n"
         
         message_text += "Lep Pozdrav,\nMr. robotek."
